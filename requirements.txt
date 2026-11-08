@@ -1,0 +1,5 @@
+# Versions verified with Python 3.13 during the 2026-11-08 handover.
+numpy==2.4.3
+pandas==3.0.1
+tzdata==2025.3
+MetaTrader5==5.0.6180; sys_platform == "win32"

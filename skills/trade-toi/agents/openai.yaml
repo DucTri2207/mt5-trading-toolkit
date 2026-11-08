@@ -1,0 +1,4 @@
+interface:
+  display_name: "trade tối"
+  short_description: "Phân tích ca tối MT5, giữ đủ tín hiệu A"
+  default_prompt: "Dùng $trade-toi phân tích các cơ hội ca tối từ MT5, trả tín hiệu A trước rồi bổ sung bối cảnh."

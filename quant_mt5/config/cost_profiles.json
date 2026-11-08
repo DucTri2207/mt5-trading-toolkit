@@ -1,0 +1,12 @@
+{
+  "cost_profile_version": "cost-profiles-v1",
+  "declared_at": "2026-11-03, before any P&L of this engine was computed",
+  "status": "ASSUMED — no account commission statement or fill journal is available. Every number below is an assumption, never a measurement.",
+  "quote_model_note": "Ask = Bid + spread_points*point where spread_points = max(previous completed M1 bar spread field, scenario floor). The bar spread field is the MINIMUM spread inside the bar (audit spread_semantics), so it understates typical spread; the floor guards against that.",
+  "scenarios": {
+    "LOW":     {"label": "optimistic bound",  "spread_floor_points": {"XAUUSD": 0,  "EURUSD": 0, "USDJPY": 0}, "slippage_points_per_side": {"XAUUSD": 0, "EURUSD": 0, "USDJPY": 0}, "commission_usd_per_lot_round_trip": 0.0,  "commission_status": "ZERO_ASSUMED_FOR_BOUND"},
+    "BASE":    {"label": "headline",          "spread_floor_points": {"XAUUSD": 10, "EURUSD": 5, "USDJPY": 6}, "slippage_points_per_side": {"XAUUSD": 2, "EURUSD": 1, "USDJPY": 1}, "commission_usd_per_lot_round_trip": 7.0,  "commission_status": "ASSUMED"},
+    "ADVERSE": {"label": "adverse (not worst case)", "spread_floor_points": {"XAUUSD": 20, "EURUSD": 10, "USDJPY": 12}, "slippage_points_per_side": {"XAUUSD": 5, "EURUSD": 3, "USDJPY": 3}, "commission_usd_per_lot_round_trip": 10.0, "commission_status": "ASSUMED"}
+  },
+  "latency_scenarios_s": {"BASE": 5, "MANUAL": 30, "SLOW": 60}
+}

@@ -1,0 +1,11 @@
+{
+  "ledger_version": "exposure-v1",
+  "rule": "Every dataset window below has already been seen by research. None may be presented as final/fresh OOS. Fresh evidence = data collected after a recorded freeze (B6).",
+  "entries": [
+    {"dataset": "XAUUSD M1/M5/H1/D1 2021-01-04..2026-10-23 (reports/can_ho_tro_scalp/20261025_v1/rates.npz)", "used_by": "Cản Hỗ Trợ scalp research v1..v19", "purpose": "detector/strategy research, walk-forward, cost sensitivity", "when": "2026-10-25..2026-11-01", "evidence": "reports/can_ho_tro_scalp/* (FINAL_RESEARCH_REPORT.md, EXPERIMENT_LOCK.json)"},
+    {"dataset": "XAUUSD 2021-10-23..2026-10-23 (reports/scalp_structure_lab/20261025_pilot_v1/rates.npz)", "used_by": "Cản Hỗ Trợ v3/v4 upgrade lab, gold_v301_causal", "purpose": "evaluation window of PROTOCOL.json", "when": "2026-10-25..2026-11-02", "evidence": "PROTOCOL.json dataset.evaluation_start/end"},
+    {"dataset": "EURUSD, USDJPY (+GBPUSD, USDCAD, USDSEK, USDCHF) M5 2021-01-04..2026-10-23 (reports/can_ho_tro_scalp/20261101_intermarket_v9/fx_rates.npz)", "used_by": "intermarket_v9 research", "purpose": "USD impulse / catch-up hypotheses vs gold", "when": "2026-11-01", "evidence": "reports/can_ho_tro_scalp/20261101_intermarket_v9/FX_DATA_MANIFEST.json, CUMULATIVE_REGISTRY.json"},
+    {"dataset": "XAUUSD/EURUSD/USDJPY M5 sample windows", "used_by": "Codex preparation (PREP_DATA_AUDIT.json)", "purpose": "illustrative ATR/RVOL/ER", "when": "2026-11-03", "evidence": "quant_mt5_plan_20261103/PREP_DATA_AUDIT.json"},
+    {"dataset": "XAUUSD/EURUSD/USDJPY full cached spans", "used_by": "Claude, quant-mt5 v0.2 (this job)", "purpose": "B0 audit (integrity, clock, spread semantics, price grid); B2 smoke run of detector catalog counts (no P&L viewed)", "when": "2026-11-03", "evidence": "quant_mt5/store/audit/AUDIT_REPORT.json; experiment EXP_a0167dff6ea196041357 registered 2026-11-03T07:36:13Z before any P&L"}
+  ]
+}

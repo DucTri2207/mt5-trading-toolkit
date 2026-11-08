@@ -1,0 +1,141 @@
+{
+  "registry_version": "datasets-v2",
+  "source_id": "mt5_cache_D0E8209F_metaquotes_demo_inferred",
+  "source_identity": {
+    "terminal_executable": "C:\\Program Files\\MetaTrader 5\\terminal64.exe",
+    "terminal_data_path": "SET_YOUR_LOCAL_TERMINAL_DATA_PATH",
+    "server": "MetaQuotes-Demo (INFERRED: terminal bases folder holds XAUUSD/EURUSD/USDJPY history only under bases\\MetaQuotes-Demo for the archive span; server name was not recorded in the archive manifests)",
+    "account_fingerprint": "UNKNOWN (archives did not record account; no live attach performed by this job)",
+    "terminal_build": "UNKNOWN (no live attach)",
+    "collected_by": "earlier research scripts (Cản Hỗ Trợ / intermarket v9) via MT5 Python copy_rates_range",
+    "retrieved_utc": {
+      "XAUUSD": "2026-10-25T13:33:09Z",
+      "EURUSD": "UNKNOWN (intermarket_v9 FX_DATA_MANIFEST, 2026-11-01)",
+      "USDJPY": "UNKNOWN (intermarket_v9 FX_DATA_MANIFEST, 2026-11-01)"
+    }
+  },
+  "time_contracts": {
+    "API_UTC_CONTRACT": {
+      "clock_profile": "RAW_IS_UTC",
+      "applies_to": "datasets collected by quantmt5.collector through the MT5 Python API (copy_rates_range / copy_ticks_range)",
+      "basis": "MetaTrader5 Python API documentation describes returned timestamps as UTC; values are stored as returned and NO offset is applied",
+      "doc_refs": [
+        "https://www.mql5.com/en/docs/python_metatrader5/mt5copyratesrange_py",
+        "https://www.mql5.com/en/docs/python_metatrader5/mt5copyticksrange_py"
+      ],
+      "status": "DOC_CONTRACT_TIME_UNVERIFIED",
+      "verification_path": "collector records a clock probe (latest tick time vs local UTC at collection); a human/Codex review of that probe is required before any status upgrade",
+      "override_rule": "a different clock_profile on an API_UTC_CONTRACT dataset is rejected unless override_reason is recorded (prevents double offset)"
+    },
+    "LEGACY_CACHE_HYPOTHESIS": {
+      "applies_to": "archives produced by earlier research scripts whose clock was never cross-checked against an observed server/UTC time",
+      "basis": "per-dataset recorded basis is preserved verbatim; the applied clock_profile is a research hypothesis, not a verified mapping",
+      "status": "CONFLICT_ASSUMED"
+    }
+  },
+  "symbols": {
+    "XAUUSD": {
+      "dataset_id": "ds_xauusd_cache_20261025",
+      "exposure": "HISTORICAL_EXPOSED: XAUUSD 2021-2026 used by Cản Hỗ Trợ v3/v4, scalp lab and gold_v301 research (PROTOCOL.json). Not fresh OOS.",
+      "time_basis": {
+        "contract": "LEGACY_CACHE_HYPOTHESIS",
+        "source_time_basis_recorded": "MT5 Python UTC API; retain original feed epoch and D1 boundaries",
+        "source_time_basis_ref": "reports/can_ho_tro_scalp/20261025_v1/data_manifest.json#timestamp_basis",
+        "source_time_basis_ref_sha256": "6739de1fd0471f50ab2c72318917b4a709d752a5f5a00c86b7eff5f04cee9f5b",
+        "source_clock_mapping_recorded": "UNVERIFIED; source hour filter is retained in feed timestamp hours",
+        "clock_profile_applied": "EET_EU",
+        "clock_profile_status": "ASSUMED",
+        "time_basis_status": "SOURCE_CONFLICT:TIME_BASIS",
+        "conflict_reason": "Recorded basis names the MT5 Python UTC API, but session-boundary evidence (store/audit/AUDIT_REPORT.json time_basis/clock_evidence) is most consistent with EET/EEST wall-clock epochs (EET_EU 3/3, NY_PLUS_7 2/3, RAW_IS_UTC 0/3). Neither reading has been verified against an observed clock.",
+        "alternative_profiles": [
+          "RAW_IS_UTC",
+          "NY_PLUS_7"
+        ]
+      },
+      "timeframes": {
+        "M1": {
+          "path": "reports/can_ho_tro_scalp/20261025_v1/rates.npz",
+          "key": "m1",
+          "sha256": "228654e7469fa5788c144e84444975279bd2f20919ee7821f5a8177e3bec6aeb"
+        },
+        "M5": {
+          "path": "reports/can_ho_tro_scalp/20261025_v1/rates.npz",
+          "key": "m5",
+          "sha256": "228654e7469fa5788c144e84444975279bd2f20919ee7821f5a8177e3bec6aeb"
+        },
+        "H1": {
+          "path": "reports/can_ho_tro_scalp/20261025_v1/rates.npz",
+          "key": "h1",
+          "sha256": "228654e7469fa5788c144e84444975279bd2f20919ee7821f5a8177e3bec6aeb"
+        },
+        "D1": {
+          "path": "reports/can_ho_tro_scalp/20261025_v1/rates.npz",
+          "key": "d1",
+          "sha256": "228654e7469fa5788c144e84444975279bd2f20919ee7821f5a8177e3bec6aeb"
+        }
+      }
+    },
+    "EURUSD": {
+      "dataset_id": "ds_eurusd_cache_intermarket_v9",
+      "exposure": "HISTORICAL_EXPOSED: EURUSD M5 2021-2026 used by intermarket_v9 research. Not fresh OOS.",
+      "time_basis": {
+        "contract": "LEGACY_CACHE_HYPOTHESIS",
+        "source_time_basis_recorded": "numeric epoch timestamps; same-feed compatibility checked against frozen gold",
+        "source_time_basis_ref": "reports/can_ho_tro_scalp/20261101_intermarket_v9/FX_DATA_MANIFEST.json#clock (utc_request_bounds=true)",
+        "source_time_basis_ref_sha256": "597e4d59a496ee37e6c70f7ce7d63458aae61ae41e2dbc5754de5815dfb88a49",
+        "clock_profile_applied": "EET_EU",
+        "clock_profile_status": "ASSUMED",
+        "time_basis_status": "SOURCE_CONFLICT:TIME_BASIS",
+        "conflict_reason": "Recorded basis: numeric epoch with UTC request bounds (no explicit clock). Rollover-spread evidence is most consistent with EET/EEST wall-clock epochs; not verified against an observed clock.",
+        "alternative_profiles": [
+          "RAW_IS_UTC",
+          "NY_PLUS_7"
+        ]
+      },
+      "timeframes": {
+        "M5": {
+          "path": "reports/can_ho_tro_scalp/20261101_intermarket_v9/fx_rates.npz",
+          "key": "EURUSD",
+          "sha256": "b88b66552c11d130de5c036454bd3d03290d28522989951a4ac5ffafb9c6307b"
+        },
+        "H1": {
+          "derive_from": "M5"
+        },
+        "D1": {
+          "derive_from": "M5"
+        }
+      }
+    },
+    "USDJPY": {
+      "dataset_id": "ds_usdjpy_cache_intermarket_v9",
+      "exposure": "HISTORICAL_EXPOSED: USDJPY M5 2021-2026 used by intermarket_v9 research. Not fresh OOS.",
+      "time_basis": {
+        "contract": "LEGACY_CACHE_HYPOTHESIS",
+        "source_time_basis_recorded": "numeric epoch timestamps; same-feed compatibility checked against frozen gold",
+        "source_time_basis_ref": "reports/can_ho_tro_scalp/20261101_intermarket_v9/FX_DATA_MANIFEST.json#clock (utc_request_bounds=true)",
+        "source_time_basis_ref_sha256": "597e4d59a496ee37e6c70f7ce7d63458aae61ae41e2dbc5754de5815dfb88a49",
+        "clock_profile_applied": "EET_EU",
+        "clock_profile_status": "ASSUMED",
+        "time_basis_status": "SOURCE_CONFLICT:TIME_BASIS",
+        "conflict_reason": "Recorded basis: numeric epoch with UTC request bounds (no explicit clock). Rollover-spread evidence is most consistent with EET/EEST wall-clock epochs; not verified against an observed clock.",
+        "alternative_profiles": [
+          "RAW_IS_UTC",
+          "NY_PLUS_7"
+        ]
+      },
+      "timeframes": {
+        "M5": {
+          "path": "reports/can_ho_tro_scalp/20261101_intermarket_v9/fx_rates.npz",
+          "key": "USDJPY",
+          "sha256": "b88b66552c11d130de5c036454bd3d03290d28522989951a4ac5ffafb9c6307b"
+        },
+        "H1": {
+          "derive_from": "M5"
+        },
+        "D1": {
+          "derive_from": "M5"
+        }
+      }
+    }
+  }
+}

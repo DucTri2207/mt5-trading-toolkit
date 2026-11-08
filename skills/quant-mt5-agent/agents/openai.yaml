@@ -1,0 +1,6 @@
+interface:
+  display_name: "Quant MT5 — phân tích theo yêu cầu"
+  short_description: "Quét MT5, đọc chỉ số, khung Fabio/CVD cho FTMO"
+  default_prompt: "Dùng $quant-mt5-agent quét các mã đang theo dõi và phân tích trước phiên tối nay từ dữ liệu MT5 demo."
+policy:
+  allow_implicit_invocation: true

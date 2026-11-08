@@ -1,0 +1,158 @@
+{
+  "protocol_name": "CAN_HO_TRO_UPGRADE_LAB_PROTOCOL",
+  "version": "1.0.0",
+  "created_utc": "2026-11-01T08:45:00Z",
+  "author": "Đức Trí Trading - Ponytail Lab",
+  "principles": {
+    "framework": "Ponytail Principle (Lazy Senior Dev Mode)",
+    "pre_registration": true,
+    "causality": "Strictly chronological, zero lookahead bias, no future bar peeking",
+    "retention_gate": "N_alert_new >= N_alert_baseline and N_fill_new >= N_fill_baseline (100% retention minimum)",
+    "honesty": "If economic criteria are not met, report clear failure with reproducible ledgers"
+  },
+  "dataset": {
+    "source_archive": "reports/scalp_structure_lab/20261025_pilot_v1/rates.npz",
+    "symbol": "XAUUSD",
+    "contract_size": 100,
+    "quote_currency": "USD",
+    "evaluation_start": "2021-10-23T00:00:00Z",
+    "evaluation_end": "2026-10-23T23:59:59Z",
+    "full_years": [2022, 2023, 2024, 2025],
+    "timeframes": {
+      "htf": "PERIOD_H1 (Macro Supply/Demand Zones)",
+      "ltf": "PERIOD_M5 (Structure Confirmation & CHoCH)",
+      "micro": "PERIOD_M1 (Intrabar Limit Retest Replay)"
+    }
+  },
+  "branches": {
+    "B0": {
+      "name": "B0_LITERAL",
+      "description": "Literal MT5 baseline replicating original v3.01 quirks, float precision truncations (rr1 < 1.5), transient zone indices, and plan coupling",
+      "lab_mode": 0,
+      "mode_enum": "LAB_MODE_COMPAT",
+      "entry_type": "MARKET",
+      "min_rr_tolerance": 0.0,
+      "plan_lock": true,
+      "deterministic_keys": false
+    },
+    "B1": {
+      "name": "B1_TECHNICAL",
+      "description": "Surgical technical bugfixes: float precision tolerance 1e-7, decoupled candidate detection from plan active lifecycle, deterministic zone keys",
+      "lab_mode": 1,
+      "mode_enum": "LAB_MODE_TECHNICAL",
+      "entry_type": "MARKET",
+      "min_rr_tolerance": 1e-7,
+      "plan_lock": false,
+      "deterministic_keys": true
+    },
+    "H1": {
+      "name": "H1_ROOM_NET_R",
+      "description": "Priority ranking among multiple candidate zones on the same confirmation candle by room_net_R = (opposing_room - roundtrip_cost) / R_price",
+      "lab_mode": 2,
+      "mode_enum": "LAB_MODE_EXP",
+      "ranking_metric": "room_net_R",
+      "guardrail": "candidate_sl_dist <= baseline_sl_dist + 1e-9 (structural stop cannot be wider than baseline)",
+      "tie_breakers": [
+        "smaller distance from entry to originating zone edge",
+        "stable zone identifier"
+      ],
+      "unknown_opposing_room_handling": "ranked after candidates with measured opposing room; never assigned infinity; retains baseline order if all unknown"
+    },
+    "H2": {
+      "name": "H2_RETEST_LIMIT",
+      "description": "Virtual limit order placed at known CHoCH level at t0 with 5-minute (M5 bar) retest window and market fallback",
+      "lab_mode": 2,
+      "mode_enum": "LAB_MODE_EXP",
+      "retest_window_seconds": 300,
+      "order_level": "known_choch_level_at_t0",
+      "limit_fill_rule": "BUY fills when Ask <= limit; SELL fills when Bid >= limit; fill at exact limit price without favorable slip",
+      "cancellation_conditions": [
+        "SL level touched before limit fill",
+        "Baseline TP level touched before limit fill",
+        "Risk outside allowable bounds [2.5, 10.0]"
+      ],
+      "market_fallback": {
+        "enabled": true,
+        "deadline_seconds": 300,
+        "execution": "First available quote at or after deadline if setup remains valid; quote delay > 60s marked execution failure"
+      },
+      "intrabar_processing": "Strict chronological sequence across M1 quotes; no future peeking"
+    },
+    "H1_H2": {
+      "name": "H1_H2_COMBINED",
+      "description": "Exploratory combined branch applying H1 zone selection and H2 5-minute limit entry",
+      "lab_mode": 2,
+      "mode_enum": "LAB_MODE_EXP"
+    }
+  },
+  "payoff_models": {
+    "primary": {
+      "type": "1R",
+      "formula": "TP = entry_actual + direction * D_actual",
+      "d_actual": "abs(entry_actual - sl_initial)",
+      "timeout_minutes": 120,
+      "timeout_seconds": 7200,
+      "auto_be": false,
+      "partial_close": false,
+      "description": "Clean 1:1 risk-reward target with strict 120-minute timeout from t0 for all branches"
+    },
+    "secondary": {
+      "type": "0.5R",
+      "formula": "TP = entry_actual + direction * 0.5 * D_actual",
+      "timeout_minutes": 120,
+      "description": "Sensitivity diagnostic testing lower target threshold"
+    }
+  },
+  "fee_schedules": {
+    "LOW": {
+      "spread_usd": 0.20,
+      "commission_roundtrip_usd": 0.07,
+      "slippage_per_market_fill_usd": 0.00,
+      "nominal_roundtrip_total_usd": 0.27
+    },
+    "BASE": {
+      "spread_usd": 0.30,
+      "commission_roundtrip_usd": 0.07,
+      "slippage_per_market_fill_usd": 0.01,
+      "nominal_roundtrip_total_usd": 0.39
+    },
+    "STRESS": {
+      "spread_usd": 0.45,
+      "commission_roundtrip_usd": 0.10,
+      "slippage_per_market_fill_usd": 0.05,
+      "nominal_roundtrip_total_usd": 0.65
+    }
+  },
+  "portfolio_execution": {
+    "max_concurrent_positions": 1,
+    "rule": "strictly 1 open position forward in time; signals occurring while a position is open are excluded from portfolio execution",
+    "risk_limits": {
+      "min_sl_distance_usd": 2.50,
+      "max_sl_distance_usd": 10.00,
+      "max_spread_usd": 0.45
+    }
+  },
+  "telemetry_specifications": {
+    "metric_1": "Exact originating H1 zone (ID, coordinates, type, score)",
+    "metric_2": "Distance to zone in price and normalized by ATR (dist / atr)",
+    "metric_3": "Opposing barrier room and room_net_R = (room - cost) / risk",
+    "metric_4": "Current spread vs SL distance ratio (spread / risk)",
+    "metric_5": "CHoCH execution latency (slippage from bar close to current price)",
+    "guard": "Telemetry metrics are strictly informational for manual decision support; zero automated trade filtering or uncalibrated win probabilities"
+  },
+  "acceptance_criteria": {
+    "trade_retention": {
+      "full_window": "N_alert_new >= N_alert_baseline and N_fill_new >= N_fill_baseline",
+      "annual_gate": "N_alert_new >= N_alert_baseline and N_fill_new >= N_fill_baseline for each year 2022, 2023, 2024, 2025"
+    },
+    "economic_viability": {
+      "win_rate_increase": "TP-before-SL % >= baseline + 5.0 percentage points",
+      "expectancy_base": ">= +0.05 R / trade",
+      "profit_factor_base": ">= 1.20",
+      "expectancy_stress": "> 0.00 R / trade",
+      "profit_factor_stress": "> 1.00",
+      "max_drawdown": "<= baseline drawdown under identical risk sizing"
+    },
+    "stopping_rule": "If no candidate satisfies both retention and economic edge under fees, report definitive failure with full ledgers and audit trails"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "strategy_version": "setups-v0.1-seed",
+  "source_spec": "quant_mt5_plan_20261103/quant-mt5-agent/references/setup-specs.md (sha256 in HANDOFF_MANIFEST.json)",
+  "status": "SEED parameters registered before testing; not certified edge",
+  "common": {
+    "atr_period": 14, "atr_kind": "WILDER_SEED_SMA14",
+    "ema_period": 50, "ema_kind": "SMA50_SEED_ALPHA_2_51",
+    "warmup_m5_bars": 200, "warmup_h1_bars_for_ema": 250,
+    "delta_atr_mult": 0.10, "delta_min_ticks": 2,
+    "buffer_atr_mult": 0.05, "buffer_min_ticks": 2,
+    "epsilon_ticks": 1,
+    "spread_guard_max_spread_over_R": 0.15,
+    "entry_drift_guard_atr_mult": 0.10,
+    "tp_R_multiple": 1.5,
+    "max_hold_minutes": 60,
+    "entry_deadline_s_after_signal_close": 90,
+    "pre_session_end_exit_s": 120,
+    "sync_timeout_s": 5
+  },
+  "setup_A": {"h1_lookback_bars": 8, "anchor_window_s": 3600, "episode_ttl_s_after_breakout_close": 5400,
+              "branches": ["M0", "M1", "M2"],
+              "deviation_D1": "anchor requires the H1 bar closing exactly at h (no stale weekend/holiday zone); spec says 'eight H1 with close_at <= h' without freshness rule"},
+  "setup_B": {"p2_window_ny": ["08:00", "11:00"], "prev_day_max_calendar_gap_days": 4, "branches": ["P0", "P1", "P2"]},
+  "portfolio": {"max_positions_per_symbol": 1, "max_open_risk_units_total": 1, "same_event_priority": "A_over_B",
+                "tie_break": ["ready_at", "spread_over_R", "symbol"], "opposite_side_same_symbol_same_time": "DROP_BOTH",
+                "declared_pair": {"A": "M2", "B": "P1"},
+                "pair_status": "EXPLORATORY: declared before results; plan B4 says the A+B portfolio is evaluated after a selection step that has not happened"}
+}

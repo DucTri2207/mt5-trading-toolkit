@@ -1,0 +1,111 @@
+#property strict
+#include "../../Include/CanHoTroScalpState.mqh"
+const string folder="can_ho_tro_scalp_v1\\";
+int checks=0,failures=0;
+void Check(const bool ok,const string label){checks++;if(!ok){failures++;Print("NATIVE FAIL ",label);}}
+bool ReadBars(const string name,MqlRates &out[])
+{
+   int f=FileOpen(folder+name+".csv",FILE_READ|FILE_CSV|FILE_ANSI,',');if(f==INVALID_HANDLE)return false;
+   int n=0;
+   while(!FileIsEnding(f))
+   {
+      string stamp=FileReadString(f);if(stamp=="")break;ArrayResize(out,n+1,65536);ZeroMemory(out[n]);
+      out[n].time=(datetime)StringToInteger(stamp);out[n].open=FileReadNumber(f);out[n].high=FileReadNumber(f);
+      out[n].low=FileReadNumber(f);out[n].close=FileReadNumber(f);out[n].tick_volume=1;n++;
+   }
+   FileClose(f);return n>0;
+}
+int CreateLab(const string symbol,const ENUM_TIMEFRAMES tf)
+{
+   MqlParam parameters[];
+   @@PARAMETERS@@
+   ResetLastError();int handle=IndicatorCreate(symbol,tf,IND_CUSTOM,ArraySize(parameters),parameters);
+   Print("Native IndicatorCreate tf=",(int)tf," handle=",handle," error=",GetLastError()," params=",ArraySize(parameters));
+   return handle;
+}
+void AddQuote(const string symbol,const datetime at,const double bid)
+{
+   MqlTick ticks[1];ZeroMemory(ticks);ticks[0].time=at;ticks[0].time_msc=(long)at*1000;
+   ticks[0].bid=bid;ticks[0].ask=bid+.2;ticks[0].last=bid;ticks[0].flags=TICK_FLAG_BID|TICK_FLAG_ASK|TICK_FLAG_LAST;
+   Check(CustomTicksAdd(symbol,ticks)==1,"custom quote inserted");
+}
+int CountCandidates(const long chart,string &keys[])
+{
+   string path=StringFormat("CHT_v01_XAUUSD_CHT_LAB_%I64d_2_0_0_1_0_events.csv",chart);
+   int f=FileOpen(path,FILE_READ|FILE_CSV|FILE_ANSI,',');ArrayResize(keys,0);if(f==INVALID_HANDLE)return -1;
+   while(!FileIsEnding(f))
+   {
+      string stamp=FileReadString(f);if(stamp=="")break;
+      string kind=FileReadString(f),known=FileReadString(f),key=FileReadString(f);
+      for(int j=0;j<7;j++)FileReadString(f);
+      if(kind=="CANDIDATE"){int n=ArraySize(keys);ArrayResize(keys,n+1);keys[n]=known+"|"+key;}
+   }
+   FileClose(f);return ArraySize(keys);
+}
+bool DataReady(const long chart)
+{
+   string stem=StringFormat("CHT_v01_XAUUSD_CHT_LAB_%I64d_2_0_0_1_0_",chart);
+   string text=ObjectGetString(chart,stem+"LAB_STATUS",OBJPROP_TEXT);
+   return text!="" && StringFind(text,"DATA WARMING")<0;
+}
+void OnStart()
+{
+   string symbol="XAUUSD_CHT_LAB";
+   if(!SymbolInfoInteger(symbol,SYMBOL_EXIST))Check(CustomSymbolCreate(symbol,"DucTriLab"),"create review symbol");
+   CustomSymbolSetInteger(symbol,SYMBOL_DIGITS,2);CustomSymbolSetDouble(symbol,SYMBOL_POINT,.01);
+   CustomSymbolSetDouble(symbol,SYMBOL_TRADE_TICK_SIZE,.01);CustomSymbolSetInteger(symbol,SYMBOL_TRADE_MODE,SYMBOL_TRADE_MODE_DISABLED);
+   SymbolSelect(symbol,true);CustomRatesDelete(symbol,0,D'2030.01.01');CustomTicksDelete(symbol,0,(ulong)D'2030.01.01'*1000);
+   MqlRates initial[],extra[];bool ready=ReadBars("native_initial",initial)&&ReadBars("native_extra",extra);
+   Check(ready,"native bars loaded");if(!ready)return;
+   Check(CustomRatesUpdate(symbol,initial)==ArraySize(initial),"initial history imported");
+   double startBid=extra[0].open;AddQuote(symbol,(datetime)@@BEFORE@@,startBid);
+   // Attach through a real template so this object-based indicator owns the
+   // destination chart; the test template explicitly enables VIRTUAL plans.
+   long m5=ChartOpen(symbol,PERIOD_M5),h1=ChartOpen(symbol,PERIOD_H1);
+   Check(m5>0 && h1>0,"two review charts open");
+   Check(ChartApplyTemplate(m5,"CHT_native_v01.tpl"),"M5 native template attached");
+   Check(ChartApplyTemplate(h1,"CHT_native_v01.tpl"),"H1 native template attached");
+   ChartSetSymbolPeriod(h1,symbol,PERIOD_H1);
+   Print("Native chart context symbols=",ChartSymbol(m5),"/",ChartSymbol(h1)," barsM1=",Bars(symbol,PERIOD_M1),
+         " barsM5=",Bars(symbol,PERIOD_M5)," barsH1=",Bars(symbol,PERIOD_H1));
+   for(int i=1;i<=60;i++)
+   {
+      AddQuote(symbol,(datetime)@@BEFORE@@+i,startBid);Sleep(500);ChartRedraw(m5);ChartRedraw(h1);
+      if(DataReady(m5) && DataReady(h1))break;
+   }
+   Check(DataReady(m5) && DataReady(h1),"native warmup complete before new signal");
+   Check(CustomRatesUpdate(symbol,extra)==ArraySize(extra),"next M5 history imported");
+   for(int i=0;i<8;i++){AddQuote(symbol,(datetime)@@AT@@+i,@@BID@@);Sleep(500);ChartRedraw(m5);ChartRedraw(h1);}
+   string k5[],k1[];int n5=CountCandidates(m5,k5),n1=CountCandidates(h1,k1);
+   bool same=n5>0 && n5==n1;
+   if(same)for(int i=0;i<n5;i++)if(k5[i]!=k1[i])same=false;
+   Check(same,"M5/H1 same newly closed candidate keys");
+   string config="can_ho_tro_scalp_0.1|XAUUSD_CHT_LAB|2|0|0|1|0.00";
+   string state5=StringFormat("CHT_v01_XAUUSD_CHT_LAB_%I64d_2_0_0_1_0.bin",m5);
+   string state1=StringFormat("CHT_v01_XAUUSD_CHT_LAB_%I64d_2_0_0_1_0.bin",h1);
+   CHTPlan p5,p1;datetime wm5,wm1;long msc5,msc1;double bid5,ask5,bid1,ask1;string seen5[],seen1[];
+   bool loaded5=CHTLoadState(state5,config,p5,wm5,msc5,bid5,ask5,seen5);
+   bool loaded1=CHTLoadState(state1,config,p1,wm1,msc1,bid1,ask1,seen1);
+   Check(loaded5 && loaded1,"both native state snapshots readable");
+   Check(p5.state==CHT_FILLED && p1.state==CHT_FILLED && p5.target==0 && p1.target==0,"both virtual trailing plans filled without fixed target");
+   Check(MathAbs(p5.entry-p1.entry)<1e-8 && MathAbs(p5.risk-p1.risk)<1e-8 && p5.risk>0,"both chart periods agree on actual fill and R0");
+   string shortName=ChartIndicatorName(m5,0,0);
+   Check(ChartIndicatorDelete(m5,0,shortName),"native indicator removed for reload");Sleep(500);
+   Check(ChartApplyTemplate(m5,"CHT_native_v01.tpl"),"native indicator reattached");
+   for(int i=0;i<8;i++){AddQuote(symbol,(datetime)@@AT@@+10+i,@@BID@@);Sleep(300);ChartRedraw(m5);}
+   string afterKeys[];int afterCount=CountCandidates(m5,afterKeys);
+   Check(afterCount==n5,"reload does not emit candidate again");
+   CHTPlan restored;datetime restoredWm;long restoredMsc;double restoredBid,restoredAsk;string restoredSeen[];
+   bool restoredOK=CHTLoadState(state5,config,restored,restoredWm,restoredMsc,restoredBid,restoredAsk,restoredSeen);
+   Check(restoredOK && restored.state==CHT_FILLED && restored.entry==p5.entry && restored.initialStop==p5.initialStop && restored.eventSerial==p5.eventSerial,
+         "native reload preserves filled plan R0 and event identity");
+   bool screenshot5=ChartScreenShot(m5,folder+"native_m5.png",1400,900,ALIGN_RIGHT);
+   bool screenshot1=ChartScreenShot(h1,folder+"native_h1.png",1400,900,ALIGN_RIGHT);
+   Check(screenshot5 && screenshot1,"native screenshots saved");
+   int objects5=ObjectsTotal(m5),objects1=ObjectsTotal(h1);Check(objects5>3 && objects1>3,"native drawing objects exist");
+   int f=FileOpen(folder+"native_chart_result.json",FILE_WRITE|FILE_TXT|FILE_ANSI);
+   FileWriteString(f,StringFormat("{\"checks\":%d,\"failures\":%d,\"m5_candidates\":%d,\"h1_candidates\":%d,\"same_candidate_keys\":%s,\"m5_objects\":%d,\"h1_objects\":%d}",
+                                  checks,failures,n5,n1,same?"true":"false",objects5,objects1));FileClose(f);
+   ChartClose(m5);ChartClose(h1);
+   Print("NATIVE CHART TEST DONE checks=",checks," failures=",failures);
+}

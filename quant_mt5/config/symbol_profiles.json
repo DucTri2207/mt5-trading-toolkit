@@ -1,0 +1,39 @@
+{
+  "profile_version": "symbol-profiles-v1",
+  "note": "current-only metadata. Past contract/fee history is UNKNOWN; results are reported in R (normalised) and never converted to lots without an explicit risk profile.",
+  "symbols": {
+    "XAUUSD": {
+      "chart_basis": "BID",
+      "chart_basis_status": "RECORDED chart_mode=0 (SYMBOL_CHART_MODE_BID) in reports/can_ho_tro_scalp/20261025_v1/data_manifest.json, 2026-10-25",
+      "trade_tick_size": 0.01, "point": 0.01, "digits": 2,
+      "contract_size": 100.0, "profit_currency": "USD", "base_currency": "XAU",
+      "volume_min": null, "volume_max": null, "volume_step": null,
+      "stops_level_points": 0, "freeze_level_points": 0,
+      "metadata_status": "OBSERVED_CURRENT_ONLY 2026-10-25 (tick/point/digits/contract/stops); volume limits not recorded => lot sizing unavailable",
+      "session": {"kind": "DAILY_BREAK", "tz": "America/New_York", "daily_close": "17:00", "daily_reopen": "18:00", "weekly_close": "Fri 17:00",
+                  "status": "INFERRED from bar coverage; CONDITIONAL on the legacy clock hypothesis EET_EU (ASSUMED, SOURCE_CONFLICT:TIME_BASIS)"}
+    },
+    "EURUSD": {
+      "chart_basis": "BID",
+      "chart_basis_status": "ASSUMED (FX on MetaQuotes-Demo is normally Bid-built; chart_mode not recorded)",
+      "trade_tick_size": 1e-05, "point": 1e-05, "digits": 5,
+      "contract_size": null, "profit_currency": "USD", "base_currency": "EUR",
+      "volume_min": null, "volume_max": null, "volume_step": null,
+      "stops_level_points": null, "freeze_level_points": null,
+      "metadata_status": "INFERRED_FROM_PRICE_GRID (audit price_grid_M5: all prices on a 1e-5 grid). symbol_info never read for this archive.",
+      "session": {"kind": "ROLLOVER_ONLY", "tz": "America/New_York", "daily_close": null, "rollover": "17:00", "weekly_close": "Fri 17:00",
+                  "status": "INFERRED from bar coverage; CONDITIONAL on the legacy clock hypothesis EET_EU (ASSUMED, SOURCE_CONFLICT:TIME_BASIS)"}
+    },
+    "USDJPY": {
+      "chart_basis": "BID",
+      "chart_basis_status": "ASSUMED (chart_mode not recorded)",
+      "trade_tick_size": 0.001, "point": 0.001, "digits": 3,
+      "contract_size": null, "profit_currency": "JPY", "base_currency": "USD",
+      "volume_min": null, "volume_max": null, "volume_step": null,
+      "stops_level_points": null, "freeze_level_points": null,
+      "metadata_status": "INFERRED_FROM_PRICE_GRID (audit price_grid_M5: all prices on a 1e-3 grid). symbol_info never read for this archive.",
+      "session": {"kind": "ROLLOVER_ONLY", "tz": "America/New_York", "daily_close": null, "rollover": "17:00", "weekly_close": "Fri 17:00",
+                  "status": "INFERRED from bar coverage; CONDITIONAL on the legacy clock hypothesis EET_EU (ASSUMED, SOURCE_CONFLICT:TIME_BASIS)"}
+    }
+  }
+}

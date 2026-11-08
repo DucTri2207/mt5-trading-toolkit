@@ -1,0 +1,4 @@
+interface:
+  display_name: "Scalp Fabio — MT5"
+  short_description: "Đọc F1/F2, LVN/POC và CVD từ dữ liệu MT5"
+  default_prompt: "Dùng $scalp-fabio phân tích F1/F2 từ snapshot MT5 đã chọn, nêu vùng chờ, trigger, phản chứng và phần dữ liệu còn thiếu."
